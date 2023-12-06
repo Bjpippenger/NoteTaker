@@ -32,10 +32,19 @@ const getNotes = () =>
   fetch('/api/notes', {
     method: 'GET',
     headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch notes');
+      }
+      return response.json();
+    })
+    .catch((error) => {
+      console.error(error);
+      // Handle the error as needed
+    });
 const saveNote = (note) =>
   fetch('/api/notes', {
     method: 'POST',

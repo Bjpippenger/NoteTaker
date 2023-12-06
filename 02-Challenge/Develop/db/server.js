@@ -1,59 +1,101 @@
-const express = require('express');
-const path = require('path');
-const fs = require('fs');
+const express = require("express");
+const path = require("path");
+const fs = require("fs");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware for parsing JSON and urlencoded form data
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static("public"));
 
-// Serve static files
-app.use(express.static('public'));
+const dbPath = path.join(__dirname, "db/db.json");
 
-// API routes
-app.get('/api/notes', (req, res) => {
-  const notes = getNotes();
-  res.json(notes);
+app.get("/api/notes", (req, res) => {
+  fs.readFile(dbPath, "utf8", (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to read from database" });
+    }
+    let notes;
+    try {
+      notes = JSON.parse(data);
+      if (!Array.isArray(notes)) {
+        throw new Error("Invalid data in database");
+      }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Invalid data in database" });
+    }
+    res.json(notes);
+  });
 });
 
-app.post('/api/notes', (req, res) => {
-  const newNote = req.body;
-  const notes = getNotes();
-  const updatedNotes = [...notes, newNote];
-  saveNotes(updatedNotes);
-  res.json(newNote);
+app.post("/api/notes", (req, res) => {
+  fs.readFile(dbPath, "utf8", (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to read from database" });
+    }
+    let notes;
+    try {
+      notes = JSON.parse(data);
+      if (!Array.isArray(notes)) {
+        throw new Error("Invalid data in database");
+      }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Invalid data in database" });
+    }
+    const newNote = req.body;
+    newNote.id = notes.length;
+    notes.push(newNote);
+    fs.writeFile(dbPath, JSON.stringify(notes), (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Failed to write to database" });
+      }
+      res.json(newNote);
+    });
+  });
 });
 
-app.delete('/api/notes/:id', (req, res) => {
-  const id = req.params.id;
-  const notes = getNotes();
-  const updatedNotes = notes.filter(note => note.id !== id);
-  saveNotes(updatedNotes);
-  res.sendStatus(204);
+app.delete("/api/notes/:id", (req, res) => {
+  const noteId = parseInt(req.params.id);
+  fs.readFile(dbPath, "utf8", (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Failed to read from database" });
+    }
+    let notes;
+    try {
+      notes = JSON.parse(data);
+      if (!Array.isArray(notes)) {
+        throw new Error("Invalid data in database");
+      }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Invalid data in database" });
+    }
+    const updatedNotes = notes.filter((note) => note.id !== noteId);
+    fs.writeFile(dbPath, JSON.stringify(updatedNotes), (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Failed to write to database" });
+      }
+      res.json({ success: true });
+    });
+  });
 });
 
-// HTML routes
-app.get('/notes', (req, res) => {
+app.get("/notes", (req, res) => {
   res.sendFile(path.join(__dirname, "./public/notes.html"));
 });
 
-app.get('*', (req, res) => {
+app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "./public/index.html"));
 });
 
-// Helper functions
-function getNotes() {
-  const data = fs.readFileSync(path.join(__dirname, 'db', 'db.json'), 'utf8');
-  return JSON.parse(data);
-}
-
-function saveNotes(notes) {
-  fs.writeFileSync(path.join(__dirname, 'db', 'db.json'), JSON.stringify(notes));
-}
-
-// Start the server
 app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+  console.log(`Server listening on PORT: ${PORT}`);
 });
