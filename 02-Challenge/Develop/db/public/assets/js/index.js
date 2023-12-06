@@ -37,24 +37,15 @@ const getNotes = () =>
       console.error(error);
     });
 
-const saveNote = (note) =>
-  fetch("/api/notes", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(note),
-  });
+    const deleteNote = (id) =>
+    fetch(`/api/notes/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-const deleteNote = (id) =>
-  fetch(`/api/notes/${id}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-const renderActiveNote = () => {
+function renderActiveNote() {
   hide(saveNoteBtn);
   hide(clearBtn);
 
@@ -71,7 +62,7 @@ const renderActiveNote = () => {
     noteTitle.value = "";
     noteText.value = "";
   }
-};
+}
 
 const handleNoteSave = () => {
   const newNote = {
