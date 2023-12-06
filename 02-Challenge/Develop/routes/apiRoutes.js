@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const dbPath = path.join(__dirname, "../db/db.json");
+const dbPath = path.join(__dirname, "../db.json");
 
 module.exports = (app) => {
   app.get("/api/notes", (req, res) => {
