@@ -22,9 +22,7 @@ router.post('/api/notes', (req, res) => {
 });
 
 // Defines the delete request to this routes end point '/api/notes/:id'
-// Hello there, and welcome visitor - upon viewing this code you'll understand that for legacy purposes... 
-// this is where the trials and tribulations begin with routing... please ensure to that if you follow the...
-// the same methodology and approach with uuidv4 ... you must enter "npm i uuid@3.4.0" in the Command Line of your Terminal...
+
 router.delete('/api/notes/:id', (req, res) => {
   let data = fs.readFileSync("db/db.json", "utf8");
   const dataJSON =  JSON.parse(data);
