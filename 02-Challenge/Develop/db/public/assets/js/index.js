@@ -78,10 +78,15 @@ const handleNoteSave = () => {
     title: noteTitle.value,
     text: noteText.value,
   };
-  saveNote(newNote).then(() => {
-    getAndRenderNotes();
-    renderActiveNote();
-  });
+
+  saveNote(newNote)
+    .then(() => {
+      getAndRenderNotes();
+      renderActiveNote();
+    })
+    .catch((error) => {
+      console.error(error);
+    });
 };
 
 // Delete the clicked note
@@ -95,10 +100,14 @@ const handleNoteDelete = (e) => {
     activeNote = {};
   }
 
-  deleteNote(noteId).then(() => {
-    getAndRenderNotes();
-    renderActiveNote();
-  });
+  deleteNote(noteId)
+    .then(() => {
+      getAndRenderNotes();
+      renderActiveNote();
+    })
+    .catch((error) => {
+      console.error(error);
+    });
 };
 
 const handleNoteView = (e) => {
@@ -115,6 +124,7 @@ const handleNewNoteView = (e) => {
 
 const handleRenderBtns = () => {
   show(clearBtn);
+
   if (!noteTitle.value.trim() && !noteText.value.trim()) {
     hide(clearBtn);
   } else if (!noteTitle.value.trim() || !noteText.value.trim()) {
@@ -126,6 +136,7 @@ const handleRenderBtns = () => {
 
 const renderNoteList = async (notes) => {
   let jsonNotes = await notes.json();
+
   if (window.location.pathname === "/notes") {
     noteList.forEach((el) => (el.innerHTML = ""));
   }
@@ -159,7 +170,7 @@ const renderNoteList = async (notes) => {
 
     return liEl;
   };
-
+  
   if (jsonNotes.length === 0) {
     noteListItems.push(createLi("No saved Notes", false));
   }

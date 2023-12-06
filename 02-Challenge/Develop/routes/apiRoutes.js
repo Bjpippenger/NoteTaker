@@ -1,83 +1,24 @@
-const fs = require("fs");
-const path = require("path");
+const express = require('express');
+const router = express.Router();
+const fs = require('fs');
+const path = require('path');
+const uuid = require('uuid');
 
-const dbPath = path.join(__dirname, "../db.json");
+router.get('/notes', (req, res) => {
+  const notes = JSON.parse(fs.readFileSync(path.join(__dirname, '../db/db.json'), 'utf8'));
+  res.json(notes);
+});
 
-module.exports = (app) => {
-  app.get("/api/notes", (req, res) => {
-    fs.readFile(dbPath, "utf8", (err, data) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Failed to read from database" });
-      }
-      let notes;
-      try {
-        notes = JSON.parse(data);
-        if (!Array.isArray(notes)) {
-          throw new Error("Invalid data in database");
-        }
-      } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Invalid data in database" });
-      }
-      res.json(notes);
-    });
-  });
+router.post('/notes', (req, res) => {
+  const newNote = req.body;
+  newNote.id = uuid.v4();
 
-  app.post("/api/notes", (req, res) => {
-    fs.readFile(dbPath, "utf8", (err, data) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Failed to read from database" });
-      }
-      let notes;
-      try {
-        notes = JSON.parse(data);
-        if (!Array.isArray(notes)) {
-          throw new Error("Invalid data in database");
-        }
-      } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Invalid data in database" });
-      }
-      const newNote = req.body;
-      newNote.id = notes.length;
-      notes.push(newNote);
-      fs.writeFile(dbPath, JSON.stringify(notes), (err) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ error: "Failed to write to database" });
-        }
-        res.json(newNote);
-      });
-    });
-  });
+  const notes = JSON.parse(fs.readFileSync(path.join(__dirname, '../db/db.json'), 'utf8'));
+  notes.push(newNote);
 
-  app.delete("/api/notes/:id", (req, res) => {
-    const noteId = parseInt(req.params.id);
-    fs.readFile(dbPath, "utf8", (err, data) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Failed to read from database" });
-      }
-      let notes;
-      try {
-        notes = JSON.parse(data);
-        if (!Array.isArray(notes)) {
-          throw new Error("Invalid data in database");
-        }
-      } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Invalid data in database" });
-      }
-      const updatedNotes = notes.filter((note) => note.id !== noteId);
-      fs.writeFile(dbPath, JSON.stringify(updatedNotes), (err) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ error: "Failed to write to database" });
-        }
-        res.json({ success: true });
-      });
-    });
-  });
-};
+  fs.writeFileSync(path.join(__dirname, '../db/db.json'), JSON.stringify(notes));
+
+  res.json(newNote);
+});
+
+module.exports = router;
